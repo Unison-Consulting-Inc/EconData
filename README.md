@@ -39,9 +39,12 @@ Two non-data files are also tracked:
 
 - `.gitignore` — ignores CSV/XLSX inputs and `cbsa_types.json`, and deliberately does **not**
   ignore `*.parquet` (see the comment in the file).
-- `requirements.txt` — the pipeline's Python dependencies (pandas, pyarrow, numpy, requests,
-  and boto3 for an optional R2 upload path). It documents what `econ-download` needs; nothing
-  in this repo executes.
+- `requirements.txt` — the pipeline's Python dependencies (pandas, pyarrow, numpy,
+  requests). It documents what `econ-download` needs; nothing in this repo executes.
+  It deliberately lists no object-store client: publishing is a git push to this repo,
+  not an upload. A `boto3 >= 1.34.0` entry for "optional R2 upload" was removed on
+  2026-08-06 — it was never used by any code, and it repeatedly led readers to believe
+  Cloudflare R2 was part of the architecture.
 
 ## Consumers
 

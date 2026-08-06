@@ -1,12 +1,17 @@
 # EconData Pipeline Dependencies
+#
+# Documents what the `econ-download` pipeline needs. Nothing in this repo
+# executes; this file is reference only.
+#
+# There is deliberately no boto3 / object-store dependency: the publish
+# mechanism is a git push to this repo, and consumers fetch the parquets
+# over anonymous raw.githubusercontent.com URLs. See "Publish mechanism is
+# git push, NOT Cloudflare R2" in econ-download/RUNBOOK.md.
 
 # Data processing
 pandas>=2.0.0
 pyarrow>=14.0.0
 numpy>=1.24.0
-
-# R2 upload (optional - only needed for --upload flag)
-boto3>=1.34.0
 
 # API access
 requests>=2.31.0
