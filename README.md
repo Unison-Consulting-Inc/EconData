@@ -95,7 +95,7 @@ Secrets required: `ECONDATA_PUSH_TOKEN`, `BEA_API_KEY`, `FRED_API_KEY`.
 
 **Legacy path — launchd on the maintainer's Mac.** `com.econdata.monthly-update.plist`
 (day 20, 09:00 America/Los_Angeles) and `com.econdata.quarterly-update.plist` (Mar 31,
-Jun 30, Sep 30, Dec 30, Feb 12 at 09:00) are symlinked into `~/Library/LaunchAgents/`. The
+Jun 30, Sep 30, Dec 30, Feb 12 at 09:00) are loaded as launchd agents on that machine. The
 Actions crons above are a UTC translation of these, computed against a fixed UTC-8 anchor, so
 during PDT the workflow actually fires one hour later than the plists' nominal 09:00 wall
 clock.
