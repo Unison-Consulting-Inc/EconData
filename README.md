@@ -69,8 +69,9 @@ Nothing else in `~/Projects` reads these files outside of test fixtures
 
 ## How the data is refreshed
 
-The producing pipeline is **`econ-download`** (local path `~/Projects/util/econ-download`;
-remote `github.com/garycl/econ-download`, which is **private**). Its `pipeline.py` downloads
+The producing pipeline is **`econ-download`**
+(`github.com/Unison-Consulting-Inc/econ-download`, **private** — org membership
+required). Its `pipeline.py` downloads
 raw sources into Dropbox, `clean_data.py` writes the six generated parquets into a local
 checkout of this repo, and the checkout is committed and pushed. Read
 `econ-download/RUNBOOK.md` before running anything by hand.
@@ -123,49 +124,29 @@ fresh data visible — the dashboard picks them up on the next page load.
 
 ## Caveats
 
-### `census_geocodes.parquet` has no generator — preserve it
+### `census_geocodes.parquet` is not written by the scheduled pipeline
 
-**This is the single biggest risk in this repo.** Both consumers hard-depend on
-`census_geocodes.parquet`, and **nothing regenerates it**:
+`clean_data.py` writes exactly six parquets and `census_geocodes` is not among them —
+scheduled refreshes never touch it. It has its own dedicated generator,
+**`census_geocodes_build.py`** in the `econ-download` repo (added 2026-08-10, with a
+`--check` mode that verifies a fresh build against this published file; source
+workbooks vendored beside it). If the file is ever deleted or corrupted, rebuild it
+with that script — do not hand-edit or re-derive it ad hoc. It was accidentally
+untracked once in this repo's history and had to be restored, so treat it with care:
+44,745 rows, `Type` values `US / State / County / MSA / μSA` plus sub-county rows.
 
-- `clean_data.py` writes exactly six parquets (`clean_data.py:1121,1128,1137,1144,1149,1166`)
-  and `census_geocodes` is not among them.
-- No script anywhere in `~/Projects` downloads or builds it; the only other references are
-  test fixtures.
-- Git history shows it arrived on 2024-02-23 as a manual GitHub web upload
-  (commit `cd9d6c3`, "Add files via upload"). It was briefly untracked in commit `0cd8f6b`
-  ("stop tracking census_geocodes.parquet") and had to be restored in `53d68fe`
-  ("fix: restore census_geocodes.parquet and stop ignoring `*.parquet`") — the repo has
-  already broken this way once.
+### Where refreshes come from
 
-If this file is deleted, corrupted, or lost in a re-import, **it cannot be rebuilt from the
-pipeline.** Keep a backup outside git. If you ever need to reconstruct it, treat the source as
-unknown and re-derive it from Census geography reference files, then verify the row count
-(44,745) and the `Type` distribution against the current file.
+This repo is the publish target of `econ-refresh` (GitHub Actions in
+`Unison-Consulting-Inc/econ-download`): scheduled runs clone this repo, write the six
+generated parquets, and push. The deployed econ dashboard reads this repo's raw URLs
+at page load, so a push here is immediately live.
 
-### Publish target vs. this repo
+### The pipeline code is private
 
-The pipeline and both consumers currently point at **`garycl/EconData`**, not at this org
-repo:
-
-- `econ-refresh.yml` clones `https://github.com/garycl/EconData.git` as its publish target
-  (`econ-refresh.yml:120-134`).
-- `dash/econ/src/lib/duckdb.ts:11` and
-  `traffic-forecasts/report-engine/src/econ_data.py:29-38` both fetch
-  `raw.githubusercontent.com/garycl/EconData/master/...`.
-
-`Unison-Consulting-Inc/EconData` (this repo) and `garycl/EconData` are two independent
-non-fork repos. Until the pipeline's publish target and both consumers' base URLs are
-repointed here, **this repo will not receive scheduled refreshes** and will drift behind.
-Repointing means: update `econ-refresh.yml`'s clone URL, update `duckdb.ts`'s
-`DATA_BASE_URL` default, update `econ_data.py`'s `SOURCES` dict, and re-issue the push token.
-
-### The pipeline code is in a private personal repo
-
-`econ-download`, the only thing that can regenerate six of these seven files, lives at
-`github.com/garycl/econ-download` and is **private**. Org membership alone does not grant
-access to it. A successor needs that repo transferred or forked into the org before they can
-refresh anything.
+`econ-download` is a **private** org repo — anyone refreshing this data needs org
+membership (and the Actions secrets listed above for CI, or the RUNBOOK's manual
+path).
 
 ### `rpp.parquet` has one consumer, not two
 
