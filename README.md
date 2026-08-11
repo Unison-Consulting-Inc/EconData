@@ -33,7 +33,7 @@ observation date present in the underlying source series.
 | `pop.parquet` | Resident population | Census Bureau Population Estimates Program (PEP) county totals: `co-est00int-tot.csv` (2000–2010 intercensal), `co-est2020.csv` (2010–2020), `co-est2025-alldata.csv` (2020–2025, with a 2024 fallback) from `www2.census.gov/programs-surveys/popest` (`pipeline.py:622-633`) | area x year; `nation`/`state`/`msa`; 2000–2025; 25,220 rows | `econ-download/clean_data.py:1121` | Quarterly (`--census` runs) |
 | `qcew.parquet` | Establishment counts | BLS Quarterly Census of Employment and Wages (QCEW) — `data.bls.gov/cew/data/files/{year}/xls/{year}_all_county_high_level.zip` (`pipeline.py:286`) | area x year; `nation`/`state`/`msa`; 2001–2025; 10,817 rows | `econ-download/clean_data.py:1166` | Quarterly (`--qcew` runs) |
 | `rpp.parquet` | Regional Price Parities: all items, goods, housing/rent, other services, utilities | BEA Regional API — tables `SARPP` (state) and `MARPP` (MSA) via `apps.bea.gov/api/data`, requires a BEA API key (`pipeline.py:510-533`) | area x year; `nation`/`state`/`msa`; 2008–2024; 7,463 rows | `econ-download/clean_data.py:1149` | Quarterly (`--bea` runs) |
-| `census_geocodes.parquet` | FIPS-code lookup table: `FIPS`, `Name`, `Type` for US / State / County / MSA / µSA / County Subdivision / Minor Civil Division / Place | **`[SOURCE UNVERIFIED]`** — the column shape is consistent with a Census geography reference file, but no code in any repo downloads or builds it. It entered this repo on 2024-02-23 in commit `cd9d6c3` titled "Add files via upload", i.e. a manual GitHub web upload | 44,745 rows; static, no time dimension | **Nothing.** See Caveats | Never — static file |
+| `census_geocodes.parquet` | FIPS-code lookup table: `FIPS`, `Name`, `Type` for US / State / County / MSA / µSA / Minor Civil Division / Incorporated Place / Consolidated City | Census geography references: the vendored `all-geocodes-v2022.xlsx` workbook + the CBSA gazetteer, assembled by `econ-download/census_geocodes_build.py` (added 2026-08-10; v2 published 2026-08-11 with corrected type labels and unique sub-county FIPS) | 44,745 rows; static, no time dimension | `econ-download/census_geocodes_build.py` (has a `--check` verification mode) | On demand — static reference; regenerate only deliberately |
 
 Two non-data files are also tracked:
 
@@ -63,7 +63,7 @@ Notes on the two consumers:
   the same Dropbox directory the pipeline writes into) the HTTP fetch is skipped entirely
   (`econ_data.py:74-77`). On a machine without that Dropbox folder it falls back to the raw URL.
 
-Nothing else in `~/Projects` reads these files outside of test fixtures
+No other known consumer reads these files outside of test fixtures
 (`traffic-forecasts/report-engine/tests/test_econ_data.py`,
 `econ-download/tests/test_data.py`), which use synthetic parquets and never hit the network.
 
