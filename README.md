@@ -101,7 +101,9 @@ during PDT the workflow actually fires one hour later than the plists' nominal 0
 clock.
 
 **Manual run**, from an `econ-download` checkout, with this repo cloned to the path
-`clean_data.OUTPUT_DIR` points at (`~/Library/CloudStorage/Dropbox/Data/dash/econ`):
+`clean_data.OUTPUT_DIR` points at (hard-coded in `clean_data.py:59` to a macOS
+Dropbox location; see `econ-download/RUNBOOK.md` for what that means on CI and
+other machines):
 
 ```
 # monthly (BLS only)
